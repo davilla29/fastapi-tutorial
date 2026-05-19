@@ -1,5 +1,6 @@
 # Importing fastapi
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 # Creating an instance of the FastAPI class
 app = FastAPI()
@@ -23,3 +24,17 @@ def greet_name(name: str, age: int):
 @app.get("/greet/query")
 def greet_query(name: str):
     return {"Message": f"Hello {name}"}
+
+class Student(BaseModel):
+    name: str
+    age: int
+    roll: int
+
+# POST request example
+@app.post("/create-student")
+def create_student(student: Student):
+    return {
+        "name": student.name,
+        "age": student.age,
+        "roll": student.roll
+    }
