@@ -20,3 +20,8 @@ def create_book(book: Bookstore, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_book)
     return new_book
+
+@app.get("/books")
+def read_books(db: Session = Depends(get_db)):
+    books = db.query(model.Book).all()
+    return books
