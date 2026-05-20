@@ -63,6 +63,8 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     access_token = create_access_token(data=token_data)
     return {"access_token": access_token, "token_type": "bearer"}
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 def get_current_user(access_token: str = Depends(oauth2_scheme)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
 
@@ -77,3 +79,15 @@ def get_current_user(access_token: str = Depends(oauth2_scheme)):
         raise credential_exception
     
     return {"username": username, "role": role}
+
+@app.get("/protected")
+def protected_route(current_user: dict = Depends(get_current_user)):
+    return {"message": f"Hello, {current_user['username']}! You have accessed a protected route.", "role": current_user['role']}
+
+def require_roles(allowed_roles: list):
+    def role_checker(current_user: dict = Depends(get_current_user)):
+        user_role = current_user.get("role")
+        if user_role['role'] not in allowed_roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to access this resource")
+        return current_user
+    return role_checker
