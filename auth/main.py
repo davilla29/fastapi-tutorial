@@ -6,7 +6,8 @@ from jose import jwt
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from jose import JWTError
 
 
 load_dotenv()
@@ -61,3 +62,18 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     # Create an access token
     access_token = create_access_token(data=token_data)
     return {"access_token": access_token, "token_type": "bearer"}
+
+def get_current_user(access_token: str = Depends(oauth2_scheme)):
+    credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+
+    try: 
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        role: str = payload.get("role")
+        if username is None or role is None:
+            raise credential_exception
+        
+    except JWTError:
+        raise credential_exception
+    
+    return {"username": username, "role": role}
