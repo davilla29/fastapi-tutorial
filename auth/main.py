@@ -87,7 +87,20 @@ def protected_route(current_user: dict = Depends(get_current_user)):
 def require_roles(allowed_roles: list):
     def role_checker(current_user: dict = Depends(get_current_user)):
         user_role = current_user.get("role")
-        if user_role['role'] not in allowed_roles:
+        if user_role not in allowed_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to access this resource")
         return current_user
     return role_checker
+
+@app.get("/profile")
+def profile(current_user: dict = Depends(require_roles(["user", "admin"]))):
+    return {"message": f"Hello, {current_user['username']}! This is your profile.", "role": current_user['role']}
+
+@app.get("/user/dashboard")
+def user_dashboard(current_user: dict = Depends(require_roles(["user"]))):
+    return {"message": f"Welcome to the user dashboard"}
+
+
+@app.get("/admin/dashboard")
+def admin_dashboard(current_user: dict = Depends(require_roles(["admin"]))):
+    return {"message": f"Welcome to the admin dashboard"}
