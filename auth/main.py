@@ -6,6 +6,7 @@ from jose import jwt
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 load_dotenv()
@@ -44,3 +45,19 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
     # Return the value excluding password
     return {"id": new_user.id, "username": new_user.username, "email": new_user.email, "role": new_user.role, "message": "User created successfully"}
+
+
+@app.post("/login")
+def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == form_data.username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+
+    if not utils.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+
+    token_data = {"sub": user.username, 'role': user.role}
+
+    # Create an access token
+    access_token = create_access_token(data=token_data)
+    return {"access_token": access_token, "token_type": "bearer"}
