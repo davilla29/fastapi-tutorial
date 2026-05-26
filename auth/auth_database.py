@@ -21,7 +21,11 @@ DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYS
 
 
 ## Connection
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,
+    pool_pre_ping=True,
+)
 
 ## Session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

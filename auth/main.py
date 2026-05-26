@@ -12,7 +12,8 @@ from jose import JWTError
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+# SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "cf702abe6370a9566a5638bff744223d37975f9c6789d62dc7a1d3e8897f237f"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
